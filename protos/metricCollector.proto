@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package kubernetes;
+
+option go_package="protos/protos";
+
+import "generalView.proto";
+
+
+message NodeName {
+  string name = 1;
+}
+
+service MetricCollector {
+  rpc GatherMetric(NodeName) returns (Empty) {}
+}

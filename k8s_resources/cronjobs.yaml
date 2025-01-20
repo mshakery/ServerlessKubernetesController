@@ -1,0 +1,106 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: metric-collector-cronjob
+  namespace: default
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: metric-collector-cronjobc
+              image: mascorpion/ds:latest
+              imagePullPolicy: Always
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  for i in $(seq 1 3); do
+                    start_time=$(date +%s)
+                    ./metricCollectorCronjob/metricCollectorCronjob
+                    end_time=$(date +%s)
+                    elapsed_time=$((end_time - start_time))
+                    sleep_duration=$((20 - elapsed_time))
+                    if [ $sleep_duration -gt 0 ]; then
+                      echo "Sleeping for $sleep_duration seconds..."
+                      sleep $sleep_duration
+                    else
+                      echo "Task took longer than 20 seconds. Skipping sleep."
+                    fi
+                  done
+          restartPolicy: OnFailure
+
+
+---
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: node-checker-cronjob
+  namespace: default
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: node-checker-cronjob
+              image: mascorpion/ds:latest
+              imagePullPolicy: Always
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  for i in $(seq 1 3); do
+                    start_time=$(date +%s)
+                    ./nodeCheckerCronjob/nodeCheckerCronjob
+                    end_time=$(date +%s)
+                    elapsed_time=$((end_time - start_time))
+                    sleep_duration=$((20 - elapsed_time))
+                    if [ $sleep_duration -gt 0 ]; then
+                      echo "Sleeping for $sleep_duration seconds..."
+                      sleep $sleep_duration
+                    else
+                      echo "Task took longer than 20 seconds. Skipping sleep."
+                    fi
+                  done
+          restartPolicy: OnFailure
+
+---
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: horizontal-pod-autoscaler-cronjob
+  namespace: default
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: horizontal-pod-autoscaler-cronjob
+              image: mascorpion/ds:latest
+              imagePullPolicy: Always
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  for i in $(seq 1 3); do
+                    start_time=$(date +%s)
+                    ./horizontalPodAutoscalerCronjob/horizontalPodAutoscalerCronjob
+                    end_time=$(date +%s)
+                    elapsed_time=$((end_time - start_time))
+                    sleep_duration=$((20 - elapsed_time))
+                    if [ $sleep_duration -gt 0 ]; then
+                      echo "Sleeping for $sleep_duration seconds..."
+                      sleep $sleep_duration
+                    else
+                      echo "Task took longer than 20 seconds. Skipping sleep."
+                    fi
+                  done
+          restartPolicy: OnFailure

@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kubelet
+  namespace: default
+spec:
+  serviceName: "kubelet-headless"
+  replicas: 5
+  selector:
+    matchLabels:
+      app: kubelet-app
+  template:
+    metadata:
+      labels:
+        app: kubelet-app
+    spec:
+      containers:
+        - name: kubelet-container
+          image: mascorpion/ds:latest
+          imagePullPolicy: Always
+          command: ["kubelet/kubelet"]
+          ports:
+            - containerPort: 50051
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubelet-headless
+  namespace: default
+spec:
+  clusterIP: None
+  selector:
+    app: kubelet-app
+  ports:
+    - port: 50051
+      name: grpc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubelet-0
+  namespace: default
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: kubelet-0
+  ports:
+    - port: 50051
+      name: grpc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubelet-1
+  namespace: default
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: kubelet-1
+  ports:
+    - port: 50051
+      name: grpc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubelet-2
+  namespace: default
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: kubelet-2
+  ports:
+    - port: 50051
+      name: grpc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubelet-3
+  namespace: default
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: kubelet-3
+  ports:
+    - port: 50051
+      name: grpc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubelet-4
+  namespace: default
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: kubelet-4
+  ports:
+    - port: 50051
+      name: grpc

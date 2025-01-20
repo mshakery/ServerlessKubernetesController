@@ -1,0 +1,25 @@
+syntax="proto3";
+
+package kubernetes;
+
+option go_package="protos/protos";
+
+import "generalView.proto";
+
+message PodMetrics {
+  string name = 1;
+  string namespace = 2;
+  string cpu_usage = 3;
+  string memory_usage = 4;
+}
+
+message NodeMetrics {
+  repeated PodMetrics pod_metrics = 1;
+}
+
+
+service Kubelet {
+  rpc Metric(Empty) returns (NodeMetrics) {}
+  rpc RunAPod(Pod) returns (Empty) {}
+  rpc DeleteAPod(Pod) returns (Empty) {}
+}

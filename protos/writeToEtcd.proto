@@ -1,0 +1,18 @@
+//  protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative authentication.proto generalView.proto
+
+
+syntax = "proto3";
+
+package kubernetes;
+
+option go_package="protos/protos";
+
+import "generalView.proto";
+
+message ApplyRequest {
+  ClientRequest client_request = 1;
+}
+
+service WriteToEtcd {
+  rpc Apply(ApplyRequest) returns (Response) {}
+}

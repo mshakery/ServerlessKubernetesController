@@ -1,0 +1,254 @@
+
+syntax = "proto3";
+
+option go_package="protos/protos";
+
+import "google/protobuf/timestamp.proto";
+
+package kubernetes;
+
+message User {
+  string uid = 1;
+  string user_name = 2;
+  string token = 3;
+}
+
+// Metadata provides information about the resource, such as name and namespace.
+message Metadata {
+  string name = 1;          // Name of the resource
+  string namespace = 2;     // Namespace in which the resource exists
+  string uid = 3;           // Unique identifier
+  map<string, string> labels = 4;    // Key-value pairs for identifying resources
+  map<string, string> annotations = 5; // Arbitrary metadata
+}
+
+// PolicyRule defines a single rule for access.
+message PolicyRule {
+  repeated string verbs = 1;          // Actions (e.g., get, list, watch)
+  repeated string resources = 2;      // Resource types (e.g., pods, deployments)
+}
+
+// Role represents a Kubernetes Role resource.
+message Role {
+  Metadata metadata = 1;                // Metadata for the Role
+  repeated PolicyRule rules = 2;        // List of access rules
+}
+
+// RoleBinding represents a Kubernetes RoleBinding resource.
+message RoleBinding {
+  Metadata metadata = 1;                // Metadata for the RoleBinding
+  string roleRef = 2;                   // Role reference
+  repeated string subjects = 3;         // Subjects (e.g., users, groups)
+}
+
+
+
+
+
+
+
+// pod
+
+// Container defines a container within a Pod.
+message Container {
+  string name = 1;                    // Name of the container
+  string image = 2;                   // Container image
+  repeated string command = 3;        // Entry command
+  repeated string args = 4;           // Arguments passed to the command
+  repeated Port ports = 5;            // List of container ports
+  map<string, string> env = 6;        // Environment variables
+  ResourceRequirements resources = 7; // Resource limits and requests
+}
+
+// Port defines a container port.
+message Port {
+  int32 containerPort = 1;  // Port number on the container
+  string protocol = 2;      // Protocol (e.g., TCP, UDP)
+}
+
+// ResourceRequirements defines resource limits and requests for a container.
+message ResourceRequirements {
+  map<string, string> limits = 1;   // Resource limits (e.g., "cpu", "memory")
+  map<string, string> requests = 2; // Resource requests (e.g., "cpu", "memory")
+}
+
+// PodSpec defines the specification of a Pod.
+message PodSpec {
+  repeated Container containers = 1;    // List of containers
+  repeated string initContainers = 2;   // List of init containers
+  string serviceAccountName = 3;        // Associated ServiceAccount
+  string restartPolicy = 4;             // Restart policy (e.g., Always, OnFailure)
+}
+
+message ResourceUsage {
+  map<string, string> resource_usage = 1;
+}
+
+message Worker {
+  string worker = 1;
+}
+
+// PodStatus defines the status of a Pod.
+message PodStatus {
+  string phase = 1;                     // Phase of the Pod (e.g., Running, Pending)
+  string message = 2;                   // Status message
+  repeated Condition conditions = 3;    // List of conditions
+  ResourceUsage resource_usage = 4;
+  Worker worker = 5;
+}
+
+// Condition represents a single condition of the Pod.
+message Condition {
+  string type = 1;                      // Condition type (e.g., Ready)
+  string status = 2;                    // Status (True, False, Unknown)
+  string reason = 3;                    // Reason for the condition's status
+  string message = 4;                   // Message describing the condition
+  google.protobuf.Timestamp last_update = 5;
+}
+
+// Pod represents a Kubernetes Pod resource.
+message Pod {
+  Metadata metadata = 1;
+  PodSpec spec = 2;
+  PodStatus status = 3;
+}
+
+
+
+
+
+
+
+
+
+// deployment
+
+// DeploymentSpec defines the specification of a Deployment.
+message DeploymentSpec {
+  int32 replicas = 1;                    // Number of desired replicas
+  Metadata selector = 2;                 // Label selector for matching Pods
+  PodTemplate template = 3;              // Template to create Pods
+}
+
+// PodTemplate defines the Pod template used by a Deployment.
+message PodTemplate {
+  Metadata metadata = 1;                 // Metadata for the Pod template
+  PodSpec spec = 2;                      // Specification of the Pods created
+}
+
+// DeploymentStatus defines the status of a Deployment.
+message DeploymentStatus {
+  int32 replicas = 1;                    // Total number of replicas
+  repeated string pod_names = 2;
+}
+
+// Deployment represents a Kubernetes Deployment resource.
+message Deployment {
+  Metadata metadata = 1;
+  DeploymentSpec spec = 2;
+  DeploymentStatus status = 3;
+}
+
+
+
+
+
+// node
+message Unschedulable {
+  bool condition = 1;
+}
+
+// NodeSpec defines the specification of a Node.
+message NodeSpec {
+  string podCIDR = 1;                // CIDR range for Pods on the node
+  Unschedulable unschedulable = 2;            // Indicates if the node is schedulable
+  map<string, string> taints = 3;    // Taints applied to the node
+}
+
+message PodList {
+  repeated string pod_names = 1;
+}
+
+// NodeStatus defines the status of a Node.
+message NodeStatus {
+  Condition condition = 1; //condition of the node
+  Capacity capacity = 2;             // Total capacity of the node
+  Capacity allocatable = 3;          // Resources allocatable by the node
+  NodeInfo nodeInfo = 4;             // General information about the node
+  PodList pods = 5;
+}
+
+// Capacity defines the resource capacities and allocatable resources.
+message Capacity {
+  map<string, string> resources = 1; // Resource amounts (e.g., "cpu", "memory")
+}
+
+// NodeInfo provides detailed information about the node.
+message NodeInfo {
+  string architecture = 1;           // CPU architecture (e.g., amd64)
+  string operatingSystem = 2;        // Operating system (e.g., linux)
+  string kubeletVersion = 3;         // Kubelet version
+  string containerRuntimeVersion = 4; // Container runtime version
+}
+
+// Node represents a Kubernetes Node resource.
+message Node {
+  Metadata metadata = 1;             // Metadata for the Node
+  NodeSpec spec = 2;                 // Specification of the Node
+  NodeStatus status = 3;             // Current status of the Node
+}
+
+/*
+message Authentication {
+  string uid = 1;
+  string token = 2;
+}*/
+
+
+
+
+/* OUR OWN */
+
+message ClientRequest {
+  string operation = 1; // create, retrieve, update, delete, etc?
+  oneof oneof_resource {
+    Deployment deployment = 2;
+    Role role = 3;
+    RoleBinding role_binding = 4;
+    User user = 5;
+    Node node = 6;
+    Pod pod = 7;
+    Hpa hpa = 8;
+  }
+  google.protobuf.Timestamp timestamp = 9;
+}
+
+message Response {
+  int32 code = 1;
+  string status = 2;
+}
+
+message Empty {}
+
+
+message HPASpec {
+  int32 minReplicas = 1;            // Minimum number of replicas
+  int32 maxReplicas = 2;            // Maximum number of replicas
+  string targetResource = 3;        // Target resource to scale (e.g., Deployment name)
+  MetricSpec metrics = 4;           // Metrics for autoscaling
+}
+
+// Metric specification for HPA
+message MetricSpec {
+  float targetValue = 1;            // Target value for the resource metric
+  float targetAverageUtilization = 2;
+  string MetricType = 3;
+}
+
+message Hpa {
+  Metadata metadata = 1;            // Metadata for the HPA
+  HPASpec spec = 2;                 // Specification of the HPA
+}
+
+
+
